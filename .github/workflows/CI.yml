@@ -27,11 +27,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 2.1
-                
+                  
       - name: build del Front
         working-directory: src/Clients
         run: ./gradlew build
-      - uses: actions/upload-artifact@v4 #guardar en Artifacts de la Acción el resultado del build. No hace falta, es por curiosidad.
+
+      - uses: actions/upload-artifact@v4
         with:
            name: Clients
            path: src/Clients/build/libs
@@ -39,3 +40,24 @@ jobs:
       - name: build del Back
         working-directory: src/Backend/OrderService
         run: ./gradlew build test
+
+      # --- A PARTIR DE AQUÍ: DOCKERIZAR Y PUBLICAR ---
+      - name: dockerizar el front y el backend
+        run: |
+          cp src/Clients/build/libs/*.war deploy/docker/Clients/drop/
+          docker build -t p2gps/web deploy/docker/Clients
+          cp src/Backend/OrderService/build/libs/ordering* deploy/docker/Order/drop/
+          docker build -t p2gps/order deploy/docker/Order
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Etiquetar y subir a DockerHub
+        run: |
+          docker tag p2gps/web ${{ secrets.DOCKERHUB_USERNAME }}/p2gps:web
+          docker tag p2gps/order ${{ secrets.DOCKERHUB_USERNAME }}/p2gps:order
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/p2gps:web
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/p2gps:order
