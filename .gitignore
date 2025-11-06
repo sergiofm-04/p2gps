@@ -65,4 +65,4 @@ buildinfo.properties
 
 _site
 
-./deploy/aci-multi-container.yml
+/deploy/aci-multi-container.yml
