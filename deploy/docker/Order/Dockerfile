@@ -1,4 +1,4 @@
-FROM openjdk:8-jre
+FROM eclipse-temurin:8-jre
 
 RUN mkdir -p /usr/local/app
 
